@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gravity Cutter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Orbitron:wght@700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --surface: #f2f2f2;
+      --border: #cccccc;
+      --text: #111111;
+      --muted: #888888;
+      --font-title: 'Audiowide', sans-serif;
+      --font-body: 'Orbitron', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 13px;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 48px;
+      background: rgba(255,255,255,0.93);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--font-title);
+      font-size: 16px;
+      letter-spacing: 0.06em;
+      color: var(--text);
+    }
+    .nav-links { display: flex; gap: 36px; }
+    .nav-links a {
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    #hero {
+      width: 100%;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    #three-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    .hero-text {
+      position: absolute;
+      top: 50%;
+      left: 48px;
+      transform: translateY(-50%);
+      z-index: 2;
+      pointer-events: none;
+    }
+    .hero-text h1 {
+      font-family: var(--font-title);
+      font-size: clamp(32px, 5.5vw, 64px);
+      letter-spacing: 0.08em;
+      color: #111111;
+      line-height: 1.1;
+    }
+    .hero-text .sub {
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-top: 14px;
+    }
+    .hero-hint {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.25em;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+      animation: blink 2.2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
+
+    /* ── LAYOUT ── */
+    .wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 70px 48px;
+    }
+    .divider {
+      max-width: 1100px;
+      margin: 0 auto;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── SECTION HEADERS ── */
+    .sec-label {
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .sec-title {
+      font-family: var(--font-title);
+      font-size: clamp(18px, 3vw, 30px);
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 18px;
+    }
+    .sec-body {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text);
+      max-width: 700px;
+      line-height: 2;
+      margin-bottom: 32px;
+      font-weight: 700;
+    }
+
+    /* ── MEDIA BOXES ── */
+    .media-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .media-box img,
+    .media-box video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .placeholder {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+    .placeholder-label {
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .file-name {
+      font-family: var(--font-body);
+      font-size: 8px;
+      letter-spacing: 0.1em;
+      color: #bbb;
+      font-weight: 700;
+    }
+
+    /* ── GRIDS ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .h-md  { min-height: 300px; }
+    .h-lg  { min-height: 400px; }
+    .h-xl  { min-height: 500px; }
+
+    /* ── CONTACT ── */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .contact-item {
+      border: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .c-label {
+      font-family: var(--font-body);
+      font-size: 8px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .c-val {
+      font-family: var(--font-body);
+      font-size: 11px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      word-break: break-all;
+    }
+    .c-val:hover { text-decoration: underline; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 22px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    footer span {
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    /* ── REVEAL ── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Gravity Cutter</div>
+  <div class="nav-links">
+    <a href="#problem">Problem</a>
+    <a href="#process">Process</a>
+    <a href="#solution">Solution</a>
+    <a href="#mechanics">Mechanics</a>
+    <a href="#contact">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="three-canvas"></canvas>
+  <div class="hero-text">
+    <h1>Gravity<br>Cutter</h1>
+    <div class="sub">Product Design &nbsp;/&nbsp; Aadit Vanjari</div>
+  </div>
+  <div class="hero-hint">↓ &nbsp; Scroll to explore &nbsp;·&nbsp; Drag to rotate</div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem">
+  <div class="divider"></div>
+  <div class="wrapper reveal">
+    <div class="sec-label">01 — Problem</div>
+    <div class="sec-title">Problem</div>
+    <div class="sec-body">
+      The Gravity Cutter is designed with three main problems regarding the traditional box/board cutter in mind: the groove for moving the blade on one side which digs into the user's cutting hand during repetitive cutting hurting the hand in the process, the straight handle needing to be held at an angle which creates extreme radial deviation hurting the wrist, and the issue of safety caused by leaving the cutter blade exposed.
+    </div>
+
+    <div class="grid-2">
+      <div class="media-box h-md">
+        <img src="problem1.jpg" alt="Problem 1" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Image — Problem 1</div>
+          <div class="file-name">problem1.jpg</div>
+        </div>
+      </div>
+      <div class="media-box h-md">
+        <img src="problem2a.jpg" alt="Problem 2" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Images — Problem 2</div>
+          <div class="file-name">problem2a.jpg + problem2b.jpg</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="media-box h-lg">
+      <img src="problem3.jpg" alt="Problem 3" onerror="this.style.display='none'"/>
+      <div class="placeholder">
+        <div class="placeholder-label">Images — Problem 3</div>
+        <div class="file-name">problem3.jpg</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+  <div class="divider"></div>
+  <div class="wrapper reveal">
+    <div class="sec-label">02 — Process</div>
+    <div class="sec-title">Process</div>
+    <div class="sec-body">
+      The Gravity Cutter has gone through many iterations. Be it the form, materials or the mechanism, this product is made to be reliable and provide a seamless cutting experience.
+    </div>
+
+    <div class="grid-2">
+      <div class="media-box h-md">
+        <img src="sketches.jpg" alt="Sketches" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Image — Sketches</div>
+          <div class="file-name">sketches.jpg</div>
+        </div>
+      </div>
+      <div class="media-box h-md">
+        <img src="sketches_final.jpg" alt="Finalized Sketches" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Images — Finalized Sketches</div>
+          <div class="file-name">sketches_final.jpg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section id="solution">
+  <div class="divider"></div>
+  <div class="wrapper reveal">
+    <div class="sec-label">03 — Solution</div>
+    <div class="sec-title">Solution</div>
+    <div class="sec-body">
+      Designed specifically for sustained usage with a special focus towards ergonomics, the Gravity Cutter transitions seamlessly from closed to cutting-ready in one fluid motion. Tailored to be used for model making by architects, interior designers and industrial designers.
+    </div>
+
+    <div class="media-box h-xl">
+      <img src="solution.jpg" alt="Final Product" onerror="this.style.display='none'"/>
+      <div class="placeholder">
+        <div class="placeholder-label">Image — Final Product</div>
+        <div class="file-name">solution.jpg</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MECHANICAL DETAILS -->
+<section id="mechanics">
+  <div class="divider"></div>
+  <div class="wrapper reveal">
+    <div class="sec-label">04 — Mechanical Details</div>
+    <div class="sec-title">Mechanical Details</div>
+    <div class="sec-body">
+      The Gravity Cutter uses the cutting motion combined with the weight of the blade and slider to automatically lock the blade in position. The lock remains engaged until the cutter is turned upside down, at which point the blade is released and can be retracted. This design eliminates the need for a manual locking step — the blade opens and locks through gravity alone.
+    </div>
+
+    <!-- Render: how mechanism works -->
+    <div class="media-box h-xl" style="margin-bottom:12px;">
+      <video src="mechanism_render.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
+      <div class="placeholder">
+        <div class="placeholder-label">Render — How the mechanism works</div>
+        <div class="file-name">mechanism_render.mp4</div>
+      </div>
+    </div>
+
+    <!-- Render: mechanism in action -->
+    <div class="media-box h-xl" style="margin-bottom:12px;">
+      <video src="mechanism_action.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
+      <div class="placeholder">
+        <div class="placeholder-label">Render — Mechanism in action</div>
+        <div class="file-name">mechanism_action.mp4</div>
+      </div>
+    </div>
+
+    <!-- Image + Animation 1 -->
+    <div class="grid-2">
+      <div class="media-box h-md">
+        <img src="product1.jpg" alt="Final Product" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Image — Final Product</div>
+          <div class="file-name">product1.jpg</div>
+        </div>
+      </div>
+      <div class="media-box h-md">
+        <video src="animation1.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
+        <div class="placeholder">
+          <div class="placeholder-label">Video — Dynamic Animation</div>
+          <div class="file-name">animation1.mp4</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Animation 2 + Image -->
+    <div class="grid-2">
+      <div class="media-box h-md">
+        <video src="animation2.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
+        <div class="placeholder">
+          <div class="placeholder-label">Video — Dynamic Animation</div>
+          <div class="file-name">animation2.mp4</div>
+        </div>
+      </div>
+      <div class="media-box h-md">
+        <img src="product2.jpg" alt="Final Product" onerror="this.style.display='none'"/>
+        <div class="placeholder">
+          <div class="placeholder-label">Image — Final Product</div>
+          <div class="file-name">product2.jpg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="divider"></div>
+  <div class="wrapper reveal">
+    <div class="sec-label">05 — Contact</div>
+    <div class="sec-title">Contact Me</div>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <span class="c-label">Phone</span>
+        <a class="c-val" href="tel:9321398569">9321398569</a>
+      </div>
+      <div class="contact-item">
+        <span class="c-label">Email</span>
+        <a class="c-val" href="mailto:aadit.vanjari06@gmail.com">aadit.vanjari06@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        <span class="c-label">LinkedIn</span>
+        <a class="c-val" href="#" target="_blank">LinkedIn ↗</a>
+      </div>
+      <div class="contact-item">
+        <span class="c-label">Instagram</span>
+        <a class="c-val" href="#" target="_blank">Instagram ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Gravity Cutter — Aadit Vanjari</span>
+  <span>Product Design Portfolio</span>
+</footer>
+
+<!-- THREE.JS + GLTF LOADER -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+(function () {
+  const canvas = document.getElementById('three-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0xffffff, 1);
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.2;
+
+  var scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xffffff);
+
+  var camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
+  camera.position.set(0, 1, 9);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+
+  var keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
+  keyLight.position.set(5, 8, 6);
+  keyLight.castShadow = true;
+  keyLight.shadow.mapSize.width = 2048;
+  keyLight.shadow.mapSize.height = 2048;
+  scene.add(keyLight);
+
+  var fillLight = new THREE.DirectionalLight(0xddeeff, 0.5);
+  fillLight.position.set(-6, 3, -3);
+  scene.add(fillLight);
+
+  var rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
+  rimLight.position.set(0, -4, 5);
+  scene.add(rimLight);
+
+  // Group to hold and animate the model
+  var group = new THREE.Group();
+  scene.add(group);
+
+  // Load the real GLB model
+  var loader = new THREE.GLTFLoader();
+  loader.load(
+    'Gravity_cutter.glb',
+    function (gltf) {
+      var model = gltf.scene;
+      var box = new THREE.Box3().setFromObject(model);
+      var center = box.getCenter(new THREE.Vector3());
+      var size = box.getSize(new THREE.Vector3());
+      var maxDim = Math.max(size.x, size.y, size.z);
+      var scale = 4.5 / maxDim;
+      model.scale.setScalar(scale);
+      model.position.sub(center.multiplyScalar(scale));
+      model.traverse(function (child) {
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+      });
+      group.add(model);
+    },
+    undefined,
+    function (err) { console.error('GLB load error:', err); }
+  );
+
+  // Ground plane
+  var plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(30, 30),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 })
+  );
+  plane.rotation.x = -Math.PI / 2;
+  plane.position.y = -2.5;
+  plane.receiveShadow = true;
+  scene.add(plane);
+
+  // Drag / orbit
+  var isDragging = false, prevX = 0, prevY = 0;
+  var rotX = 0.1, rotY = 0;
+  var mouseX = 0, mouseY = 0;
+
+  canvas.style.cursor = 'grab';
+  canvas.addEventListener('mousedown', function (e) {
+    isDragging = true; prevX = e.clientX; prevY = e.clientY;
+    canvas.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mouseup', function () {
+    isDragging = false; canvas.style.cursor = 'grab';
+  });
+  window.addEventListener('mousemove', function (e) {
+    if (isDragging) {
+      rotY += (e.clientX - prevX) * 0.008;
+      rotX += (e.clientY - prevY) * 0.005;
+      rotX = Math.max(-0.6, Math.min(0.6, rotX));
+      prevX = e.clientX; prevY = e.clientY;
+    } else {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    }
+  });
+  canvas.addEventListener('touchstart', function (e) {
+    isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+  });
+  canvas.addEventListener('touchend', function () { isDragging = false; });
+  canvas.addEventListener('touchmove', function (e) {
+    if (!isDragging) return;
+    rotY += (e.touches[0].clientX - prevX) * 0.008;
+    rotX += (e.touches[0].clientY - prevY) * 0.005;
+    rotX = Math.max(-0.6, Math.min(0.6, rotX));
+    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+  });
+
+  window.addEventListener('resize', function () {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  var clock = new THREE.Clock();
+  function animate() {
+    requestAnimationFrame(animate);
+    var t = clock.getElapsedTime();
+    if (!isDragging) rotY += 0.003;
+    group.rotation.y = rotY + mouseX * 0.1;
+    group.rotation.x = rotX + mouseY * 0.06;
+    group.position.y = Math.sin(t * 0.55) * 0.08;
+    renderer.render(scene, camera);
+  }
+  animate();
+}());
+</script>
+
+<!-- SCROLL REVEAL -->
+<script>
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(function(r) { obs.observe(r); });
+</script>
+
+</body>
+</html>
