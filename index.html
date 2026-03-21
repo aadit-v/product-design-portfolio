@@ -457,7 +457,7 @@
       </div>
       <div class="contact-item">
         <span class="c-label">Email</span>
-        <a class="c-val" href="/cdn-cgi/l/email-protection#573636333e23792136393d36253e676117303a363e3b7934383a"><span class="__cf_email__" data-cfemail="f79696939e83d98196999d96859ec7c1b7909a969e9bd994989a">[email&#160;protected]</span></a>
+        <a class="c-val" href="mailto:aadit.vanjari06@gmail.com">aadit.vanjari06@gmail.com</a>
       </div>
       <div class="contact-item">
         <span class="c-label">LinkedIn</span>
@@ -477,7 +477,7 @@
 </footer>
 
 <!-- THREE.JS + GLTF LOADER -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 (function () {
@@ -520,20 +520,12 @@
   var group = new THREE.Group();
   scene.add(group);
 
-  // Parts data — each mesh gets an origin and explode direction
-  var parts = [];
-  var explodeAmount = 0;     // 0 = assembled, 1 = fully exploded
-  var explodeTarget = 0;     // what we're animating toward
-  var isHolding = false;
-
   // Load the real GLB model
   var loader = new THREE.GLTFLoader();
   loader.load(
     'Gravity_cutter.glb',
     function (gltf) {
       var model = gltf.scene;
-
-      // Center + scale
       var box = new THREE.Box3().setFromObject(model);
       var center = box.getCenter(new THREE.Vector3());
       var size = box.getSize(new THREE.Vector3());
@@ -541,36 +533,13 @@
       var scale = 4.5 / maxDim;
       model.scale.setScalar(scale);
       model.position.sub(center.multiplyScalar(scale));
-      group.add(model);
-
-      // After positioning, record each mesh's origin and explode direction
       model.traverse(function (child) {
         if (child.isMesh) {
           child.castShadow = true;
           child.receiveShadow = true;
-
-          // World center of this mesh
-          var meshBox = new THREE.Box3().setFromObject(child);
-          var meshCenter = meshBox.getCenter(new THREE.Vector3());
-
-          // Convert to local group space
-          group.worldToLocal(meshCenter);
-
-          // Direction = from model center outward
-          var dir = meshCenter.clone().normalize();
-          if (dir.length() < 0.001) {
-            dir.set(0, 1, 0); // fallback for centered parts
-          }
-
-          // Store origin (local position) and direction
-          parts.push({
-            mesh: child,
-            origin: child.position.clone(),
-            dir: dir,
-            dist: 1.2 + Math.random() * 0.6  // slight variation per part
-          });
         }
       });
+      group.add(model);
     },
     undefined,
     function (err) { console.error('GLB load error:', err); }
@@ -586,97 +555,39 @@
   plane.receiveShadow = true;
   scene.add(plane);
 
-  // Hint label
-  var hint = document.createElement('div');
-  hint.innerText = 'HOLD TO EXPLODE';
-  hint.style.cssText = [
-    'position:absolute',
-    'bottom:70px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'font-family:Orbitron,sans-serif',
-    'font-size:9px',
-    'letter-spacing:0.3em',
-    'color:#aaa',
-    'text-transform:uppercase',
-    'pointer-events:none',
-    'z-index:3',
-    'transition:opacity 0.4s'
-  ].join(';');
-  document.getElementById('hero').appendChild(hint);
-
-  // Drag / orbit + hold to explode
+  // Drag / orbit
   var isDragging = false, prevX = 0, prevY = 0;
   var rotX = 0.1, rotY = 0;
   var mouseX = 0, mouseY = 0;
-  var holdTimer = null;
 
   canvas.style.cursor = 'grab';
-
   canvas.addEventListener('mousedown', function (e) {
-    prevX = e.clientX; prevY = e.clientY;
-    // Short delay to distinguish drag from hold
-    holdTimer = setTimeout(function () {
-      isHolding = true;
-      explodeTarget = 1;
-      canvas.style.cursor = 'crosshair';
-      hint.style.opacity = '0';
-    }, 180);
+    isDragging = true; prevX = e.clientX; prevY = e.clientY;
+    canvas.style.cursor = 'grabbing';
   });
-
   window.addEventListener('mouseup', function () {
-    clearTimeout(holdTimer);
-    isHolding = false;
-    isDragging = false;
-    explodeTarget = 0;
-    canvas.style.cursor = 'grab';
-    hint.style.opacity = '1';
+    isDragging = false; canvas.style.cursor = 'grab';
   });
-
   window.addEventListener('mousemove', function (e) {
-    var dx = e.clientX - prevX;
-    var dy = e.clientY - prevY;
-    if (!isHolding && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
-      isDragging = true;
-      clearTimeout(holdTimer);
-    }
-    if (isDragging && !isHolding) {
-      rotY += dx * 0.008;
-      rotX += dy * 0.005;
+    if (isDragging) {
+      rotY += (e.clientX - prevX) * 0.008;
+      rotX += (e.clientY - prevY) * 0.005;
       rotX = Math.max(-0.6, Math.min(0.6, rotX));
-      canvas.style.cursor = 'grabbing';
+      prevX = e.clientX; prevY = e.clientY;
+    } else {
+      mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
     }
-    prevX = e.clientX; prevY = e.clientY;
-    mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-    mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
   });
-
-  // Touch support
   canvas.addEventListener('touchstart', function (e) {
-    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
-    holdTimer = setTimeout(function () {
-      isHolding = true;
-      explodeTarget = 1;
-      hint.style.opacity = '0';
-    }, 180);
+    isDragging = true; prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
   });
-  canvas.addEventListener('touchend', function () {
-    clearTimeout(holdTimer);
-    isHolding = false;
-    isDragging = false;
-    explodeTarget = 0;
-    hint.style.opacity = '1';
-  });
+  canvas.addEventListener('touchend', function () { isDragging = false; });
   canvas.addEventListener('touchmove', function (e) {
-    var dx = e.touches[0].clientX - prevX;
-    var dy = e.touches[0].clientY - prevY;
-    if (!isHolding) {
-      isDragging = true;
-      clearTimeout(holdTimer);
-      rotY += dx * 0.008;
-      rotX += dy * 0.005;
-      rotX = Math.max(-0.6, Math.min(0.6, rotX));
-    }
+    if (!isDragging) return;
+    rotY += (e.touches[0].clientX - prevX) * 0.008;
+    rotX += (e.touches[0].clientY - prevY) * 0.005;
+    rotX = Math.max(-0.6, Math.min(0.6, rotX));
     prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
   });
 
@@ -690,27 +601,10 @@
   function animate() {
     requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
-
-    // Smooth explode lerp
-    explodeAmount += (explodeTarget - explodeAmount) * 0.06;
-
-    // Apply explode offset to each part
-    for (var i = 0; i < parts.length; i++) {
-      var p = parts[i];
-      var offset = p.dir.clone().multiplyScalar(explodeAmount * p.dist);
-      p.mesh.position.set(
-        p.origin.x + offset.x,
-        p.origin.y + offset.y,
-        p.origin.z + offset.z
-      );
-    }
-
-    // Slow auto-rotate when not interacting
-    if (!isDragging && !isHolding) rotY += 0.003;
+    if (!isDragging) rotY += 0.003;
     group.rotation.y = rotY + mouseX * 0.1;
     group.rotation.x = rotX + mouseY * 0.06;
     group.position.y = Math.sin(t * 0.55) * 0.08;
-
     renderer.render(scene, camera);
   }
   animate();
@@ -720,4 +614,12 @@
 <!-- SCROLL REVEAL -->
 <script>
   var obs = new IntersectionObserver(function(entries) {
-    entries.fo
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(function(r) { obs.observe(r); });
+</script>
+
+</body>
+</html>
