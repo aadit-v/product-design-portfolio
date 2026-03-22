@@ -29,11 +29,11 @@
       overflow-x: hidden;
     }
 
-    /* ── NAV ── */
+    /* NAV */
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
-      z-index: 100;
+      z-index: 1000;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -60,7 +60,7 @@
     }
     .nav-links a:hover { color: var(--text); }
 
-    /* ── HERO ── */
+    /* HERO */
     #hero {
       width: 100%;
       height: 100vh;
@@ -68,29 +68,38 @@
       overflow: hidden;
       background: #ffffff;
     }
+
+    /* Canvas sits at the BACK */
     #three-canvas {
       position: absolute;
-      inset: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
       display: block;
+      z-index: 0;
     }
-    .hero-text {
+
+    /* All hero UI sits in front of canvas */
+    #hero-ui {
       position: absolute;
-      top: 50%;
-      left: 48px;
-      transform: translateY(-50%);
-      z-index: 2;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
       pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-left: 48px;
     }
-    .hero-text h1 {
+    #hero-ui h1 {
       font-family: var(--font-title);
       font-size: clamp(32px, 5.5vw, 64px);
       letter-spacing: 0.08em;
       color: #111111;
       line-height: 1.1;
     }
-    .hero-text .sub {
+    #hero-ui .sub {
       font-family: var(--font-body);
       font-size: 9px;
       letter-spacing: 0.3em;
@@ -98,12 +107,11 @@
       text-transform: uppercase;
       margin-top: 14px;
     }
-    .hero-hint {
+    #hero-hint {
       position: absolute;
       bottom: 28px;
       left: 50%;
       transform: translateX(-50%);
-      z-index: 2;
       font-family: var(--font-body);
       font-size: 9px;
       letter-spacing: 0.25em;
@@ -111,10 +119,27 @@
       text-transform: uppercase;
       white-space: nowrap;
       animation: blink 2.2s infinite;
+      z-index: 5;
+      pointer-events: none;
+    }
+    #hold-hint {
+      position: absolute;
+      bottom: 52px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-body);
+      font-size: 9px;
+      letter-spacing: 0.3em;
+      color: var(--muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+      z-index: 5;
+      pointer-events: none;
+      transition: opacity 0.4s;
     }
     @keyframes blink { 0%,100%{opacity:0.2} 50%{opacity:1} }
 
-    /* ── LAYOUT ── */
+    /* LAYOUT */
     .wrapper {
       max-width: 1100px;
       margin: 0 auto;
@@ -127,7 +152,7 @@
       background: var(--border);
     }
 
-    /* ── SECTION HEADERS ── */
+    /* SECTION HEADERS */
     .sec-label {
       font-family: var(--font-body);
       font-size: 9px;
@@ -153,7 +178,7 @@
       font-weight: 700;
     }
 
-    /* ── MEDIA BOXES ── */
+    /* MEDIA BOXES */
     .media-box {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -199,18 +224,18 @@
       font-weight: 700;
     }
 
-    /* ── GRIDS ── */
+    /* GRIDS */
     .grid-2 {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px;
       margin-bottom: 12px;
     }
-    .h-md  { min-height: 300px; }
-    .h-lg  { min-height: 400px; }
-    .h-xl  { min-height: 500px; }
+    .h-md { min-height: 300px; }
+    .h-lg { min-height: 400px; }
+    .h-xl { min-height: 500px; }
 
-    /* ── CONTACT ── */
+    /* CONTACT */
     .contact-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -242,7 +267,7 @@
     }
     .c-val:hover { text-decoration: underline; }
 
-    /* ── FOOTER ── */
+    /* FOOTER */
     footer {
       border-top: 1px solid var(--border);
       padding: 22px 48px;
@@ -259,7 +284,7 @@
       font-weight: 700;
     }
 
-    /* ── REVEAL ── */
+    /* REVEAL */
     .reveal {
       opacity: 0;
       transform: translateY(24px);
@@ -284,12 +309,17 @@
 
 <!-- HERO -->
 <section id="hero">
+  <!-- 3D canvas — behind everything -->
   <canvas id="three-canvas"></canvas>
-  <div class="hero-text">
+
+  <!-- All text UI — in front of canvas -->
+  <div id="hero-ui">
     <h1>Gravity<br>Cutter</h1>
     <div class="sub">Product Design &nbsp;/&nbsp; Aadit Vanjari</div>
   </div>
-  <div class="hero-hint">↓ &nbsp; Scroll to explore &nbsp;·&nbsp; Drag to rotate</div>
+
+  <div id="hold-hint">Hold to Explode</div>
+  <div id="hero-hint">↓ &nbsp; Scroll to explore &nbsp;·&nbsp; Drag to rotate</div>
 </section>
 
 <!-- PROBLEM -->
@@ -301,7 +331,6 @@
     <div class="sec-body">
       The Gravity Cutter is designed with three main problems regarding the traditional box/board cutter in mind: the groove for moving the blade on one side which digs into the user's cutting hand during repetitive cutting hurting the hand in the process, the straight handle needing to be held at an angle which creates extreme radial deviation hurting the wrist, and the issue of safety caused by leaving the cutter blade exposed.
     </div>
-
     <div class="grid-2">
       <div class="media-box h-md">
         <img src="problem1.jpg" alt="Problem 1" onerror="this.style.display='none'"/>
@@ -318,7 +347,6 @@
         </div>
       </div>
     </div>
-
     <div class="media-box h-lg">
       <img src="problem3.jpg" alt="Problem 3" onerror="this.style.display='none'"/>
       <div class="placeholder">
@@ -338,7 +366,6 @@
     <div class="sec-body">
       The Gravity Cutter has gone through many iterations. Be it the form, materials or the mechanism, this product is made to be reliable and provide a seamless cutting experience.
     </div>
-
     <div class="grid-2">
       <div class="media-box h-md">
         <img src="sketches.jpg" alt="Sketches" onerror="this.style.display='none'"/>
@@ -367,7 +394,6 @@
     <div class="sec-body">
       Designed specifically for sustained usage with a special focus towards ergonomics, the Gravity Cutter transitions seamlessly from closed to cutting-ready in one fluid motion. Tailored to be used for model making by architects, interior designers and industrial designers.
     </div>
-
     <div class="media-box h-xl">
       <img src="solution.jpg" alt="Final Product" onerror="this.style.display='none'"/>
       <div class="placeholder">
@@ -387,8 +413,6 @@
     <div class="sec-body">
       The Gravity Cutter uses the cutting motion combined with the weight of the blade and slider to automatically lock the blade in position. The lock remains engaged until the cutter is turned upside down, at which point the blade is released and can be retracted. This design eliminates the need for a manual locking step — the blade opens and locks through gravity alone.
     </div>
-
-    <!-- Render: how mechanism works -->
     <div class="media-box h-xl" style="margin-bottom:12px;">
       <video src="mechanism_render.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
       <div class="placeholder">
@@ -396,8 +420,6 @@
         <div class="file-name">mechanism_render.mp4</div>
       </div>
     </div>
-
-    <!-- Render: mechanism in action -->
     <div class="media-box h-xl" style="margin-bottom:12px;">
       <video src="mechanism_action.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
       <div class="placeholder">
@@ -405,8 +427,6 @@
         <div class="file-name">mechanism_action.mp4</div>
       </div>
     </div>
-
-    <!-- Image + Animation 1 -->
     <div class="grid-2">
       <div class="media-box h-md">
         <img src="product1.jpg" alt="Final Product" onerror="this.style.display='none'"/>
@@ -423,8 +443,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Animation 2 + Image -->
     <div class="grid-2">
       <div class="media-box h-md">
         <video src="animation2.mp4" autoplay loop muted playsinline onerror="this.style.display='none'"></video>
@@ -457,7 +475,7 @@
       </div>
       <div class="contact-item">
         <span class="c-label">Email</span>
-        <a class="c-val" href="/cdn-cgi/l/email-protection#573636333e23792136393d36253e676117303a363e3b7934383a"><span class="__cf_email__" data-cfemail="f79696939e83d98196999d96859ec7c1b7909a969e9bd994989a">[email&#160;protected]</span></a>
+        <a class="c-val" href="mailto:aadit.vanjari06@gmail.com">aadit.vanjari06@gmail.com</a>
       </div>
       <div class="contact-item">
         <span class="c-label">LinkedIn</span>
@@ -476,17 +494,17 @@
   <span>Product Design Portfolio</span>
 </footer>
 
-<!-- THREE.JS + GLTF LOADER -->
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- THREE.JS + GLTF LOADER — loaded at bottom so HTML renders first -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 (function () {
-  const canvas = document.getElementById('three-canvas');
-  const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+  var canvas = document.getElementById('three-canvas');
+
+  var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(window.innerWidth, window.innerHeight);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.setClearColor(0xffffff, 1);
   renderer.outputEncoding = THREE.sRGBEncoding;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -500,83 +518,63 @@
 
   // Lighting
   scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+  var key = new THREE.DirectionalLight(0xffffff, 2.0);
+  key.position.set(5, 8, 6);
+  key.castShadow = true;
+  scene.add(key);
+  var fill = new THREE.DirectionalLight(0xddeeff, 0.5);
+  fill.position.set(-6, 3, -3);
+  scene.add(fill);
+  var rim = new THREE.DirectionalLight(0xffffff, 0.4);
+  rim.position.set(0, -4, 5);
+  scene.add(rim);
 
-  var keyLight = new THREE.DirectionalLight(0xffffff, 2.0);
-  keyLight.position.set(5, 8, 6);
-  keyLight.castShadow = true;
-  keyLight.shadow.mapSize.width = 2048;
-  keyLight.shadow.mapSize.height = 2048;
-  scene.add(keyLight);
-
-  var fillLight = new THREE.DirectionalLight(0xddeeff, 0.5);
-  fillLight.position.set(-6, 3, -3);
-  scene.add(fillLight);
-
-  var rimLight = new THREE.DirectionalLight(0xffffff, 0.4);
-  rimLight.position.set(0, -4, 5);
-  scene.add(rimLight);
-
-  // Group to hold and animate the model
   var group = new THREE.Group();
   scene.add(group);
 
-  // Parts data — each mesh gets an origin and explode direction
+  // Parts for explode view
   var parts = [];
-  var explodeAmount = 0;     // 0 = assembled, 1 = fully exploded
-  var explodeTarget = 0;     // what we're animating toward
-  var isHolding = false;
 
-  // Load the real GLB model
   var loader = new THREE.GLTFLoader();
-  loader.load(
-    'Gravity_cutter.glb',
-    function (gltf) {
-      var model = gltf.scene;
+  loader.load('Gravity_cutter.glb', function (gltf) {
+    var model = gltf.scene;
 
-      // Center + scale
-      var box = new THREE.Box3().setFromObject(model);
-      var center = box.getCenter(new THREE.Vector3());
-      var size = box.getSize(new THREE.Vector3());
-      var maxDim = Math.max(size.x, size.y, size.z);
-      var scale = 4.5 / maxDim;
-      model.scale.setScalar(scale);
-      model.position.sub(center.multiplyScalar(scale));
-      group.add(model);
+    // Center + scale
+    var box = new THREE.Box3().setFromObject(model);
+    var center = box.getCenter(new THREE.Vector3());
+    var size = box.getSize(new THREE.Vector3());
+    var maxDim = Math.max(size.x, size.y, size.z);
+    var scale = 4.5 / maxDim;
+    model.scale.setScalar(scale);
+    model.position.sub(center.multiplyScalar(scale));
+    group.add(model);
 
-      // After positioning, record each mesh's origin and explode direction
-      model.traverse(function (child) {
-        if (child.isMesh) {
-          child.castShadow = true;
-          child.receiveShadow = true;
+    // Record each mesh for explode
+    model.traverse(function (child) {
+      if (child.isMesh) {
+        child.castShadow = true;
+        child.receiveShadow = true;
 
-          // World center of this mesh
-          var meshBox = new THREE.Box3().setFromObject(child);
-          var meshCenter = meshBox.getCenter(new THREE.Vector3());
+        var mb = new THREE.Box3().setFromObject(child);
+        var mc = mb.getCenter(new THREE.Vector3());
+        group.worldToLocal(mc);
 
-          // Convert to local group space
-          group.worldToLocal(meshCenter);
+        var dir = mc.clone().normalize();
+        if (dir.lengthSq() < 0.001) dir.set(0, 1, 0);
 
-          // Direction = from model center outward
-          var dir = meshCenter.clone().normalize();
-          if (dir.length() < 0.001) {
-            dir.set(0, 1, 0); // fallback for centered parts
-          }
+        parts.push({
+          mesh: child,
+          origin: child.position.clone(),
+          dir: dir,
+          dist: 1.2 + Math.random() * 0.6
+        });
+      }
+    });
+  }, undefined, function (err) {
+    console.error('GLB error:', err);
+  });
 
-          // Store origin (local position) and direction
-          parts.push({
-            mesh: child,
-            origin: child.position.clone(),
-            dir: dir,
-            dist: 1.2 + Math.random() * 0.6  // slight variation per part
-          });
-        }
-      });
-    },
-    undefined,
-    function (err) { console.error('GLB load error:', err); }
-  );
-
-  // Ground plane
+  // Ground
   var plane = new THREE.Mesh(
     new THREE.PlaneGeometry(30, 30),
     new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1 })
@@ -586,42 +584,29 @@
   plane.receiveShadow = true;
   scene.add(plane);
 
-  // Hint label
-  var hint = document.createElement('div');
-  hint.innerText = 'HOLD TO EXPLODE';
-  hint.style.cssText = [
-    'position:absolute',
-    'bottom:70px',
-    'left:50%',
-    'transform:translateX(-50%)',
-    'font-family:Orbitron,sans-serif',
-    'font-size:9px',
-    'letter-spacing:0.3em',
-    'color:#aaa',
-    'text-transform:uppercase',
-    'pointer-events:none',
-    'z-index:3',
-    'transition:opacity 0.4s'
-  ].join(';');
-  document.getElementById('hero').appendChild(hint);
-
-  // Drag / orbit + hold to explode
-  var isDragging = false, prevX = 0, prevY = 0;
+  // State
+  var isDragging = false;
+  var isHolding = false;
+  var prevX = 0, prevY = 0;
   var rotX = 0.1, rotY = 0;
   var mouseX = 0, mouseY = 0;
+  var explodeAmount = 0;
+  var explodeTarget = 0;
   var holdTimer = null;
+  var holdHint = document.getElementById('hold-hint');
 
   canvas.style.cursor = 'grab';
 
   canvas.addEventListener('mousedown', function (e) {
-    prevX = e.clientX; prevY = e.clientY;
-    // Short delay to distinguish drag from hold
+    prevX = e.clientX;
+    prevY = e.clientY;
+    isDragging = false;
     holdTimer = setTimeout(function () {
       isHolding = true;
       explodeTarget = 1;
       canvas.style.cursor = 'crosshair';
-      hint.style.opacity = '0';
-    }, 180);
+      if (holdHint) holdHint.style.opacity = '0';
+    }, 200);
   });
 
   window.addEventListener('mouseup', function () {
@@ -630,43 +615,47 @@
     isDragging = false;
     explodeTarget = 0;
     canvas.style.cursor = 'grab';
-    hint.style.opacity = '1';
+    if (holdHint) holdHint.style.opacity = '1';
   });
 
   window.addEventListener('mousemove', function (e) {
     var dx = e.clientX - prevX;
     var dy = e.clientY - prevY;
-    if (!isHolding && (Math.abs(dx) > 2 || Math.abs(dy) > 2)) {
+    if (!isHolding && (Math.abs(dx) > 3 || Math.abs(dy) > 3)) {
       isDragging = true;
       clearTimeout(holdTimer);
+      canvas.style.cursor = 'grabbing';
     }
     if (isDragging && !isHolding) {
       rotY += dx * 0.008;
       rotX += dy * 0.005;
       rotX = Math.max(-0.6, Math.min(0.6, rotX));
-      canvas.style.cursor = 'grabbing';
     }
-    prevX = e.clientX; prevY = e.clientY;
+    prevX = e.clientX;
+    prevY = e.clientY;
     mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
     mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
   });
 
-  // Touch support
   canvas.addEventListener('touchstart', function (e) {
-    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+    prevX = e.touches[0].clientX;
+    prevY = e.touches[0].clientY;
+    isDragging = false;
     holdTimer = setTimeout(function () {
       isHolding = true;
       explodeTarget = 1;
-      hint.style.opacity = '0';
-    }, 180);
+      if (holdHint) holdHint.style.opacity = '0';
+    }, 200);
   });
+
   canvas.addEventListener('touchend', function () {
     clearTimeout(holdTimer);
     isHolding = false;
     isDragging = false;
     explodeTarget = 0;
-    hint.style.opacity = '1';
+    if (holdHint) holdHint.style.opacity = '1';
   });
+
   canvas.addEventListener('touchmove', function (e) {
     var dx = e.touches[0].clientX - prevX;
     var dy = e.touches[0].clientY - prevY;
@@ -677,7 +666,8 @@
       rotX += dy * 0.005;
       rotX = Math.max(-0.6, Math.min(0.6, rotX));
     }
-    prevX = e.touches[0].clientX; prevY = e.touches[0].clientY;
+    prevX = e.touches[0].clientX;
+    prevY = e.touches[0].clientY;
   });
 
   window.addEventListener('resize', function () {
@@ -687,14 +677,13 @@
   });
 
   var clock = new THREE.Clock();
+
   function animate() {
     requestAnimationFrame(animate);
     var t = clock.getElapsedTime();
 
-    // Smooth explode lerp
+    // Smooth explode
     explodeAmount += (explodeTarget - explodeAmount) * 0.06;
-
-    // Apply explode offset to each part
     for (var i = 0; i < parts.length; i++) {
       var p = parts[i];
       var offset = p.dir.clone().multiplyScalar(explodeAmount * p.dist);
@@ -705,7 +694,6 @@
       );
     }
 
-    // Slow auto-rotate when not interacting
     if (!isDragging && !isHolding) rotY += 0.003;
     group.rotation.y = rotY + mouseX * 0.1;
     group.rotation.x = rotX + mouseY * 0.06;
@@ -713,11 +701,23 @@
 
     renderer.render(scene, camera);
   }
+
   animate();
 }());
 </script>
 
 <!-- SCROLL REVEAL -->
 <script>
-  var obs = new IntersectionObserver(function(entries) {
-    entries.fo
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(function (r) { obs.observe(r); });
+</script>
+
+</body>
+</html>
